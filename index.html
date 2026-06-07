@@ -129,3 +129,187 @@
         th {
             background-color: #34495e;
             color: white;
+            font-weight: 600;
+        }
+
+        tr:hover {
+            background-color: #f9f9f9;
+        }
+
+        .btn-delete {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            width: auto;
+        }
+
+        .btn-delete:hover {
+            background-color: #c0392b;
+        }
+
+        .empty-msg {
+            text-align: center;
+            color: #7f8c8d;
+            padding: 20px;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <h1>🐾 PetCadastro</h1>
+        <p>Gerencie os dados dos seus animais de estimação de forma simples</p>
+    </header>
+
+    <div class="main-content">
+        <section class="card">
+            <h2>Novo Pet</h2>
+            <form id="petForm">
+                <div class="form-group">
+                    <label for="petName">Nome do Pet*</label>
+                    <input type="text" id="petName" required placeholder="Ex: Thor">
+                </div>
+
+                <div class="form-group">
+                    <label for="petSpecies">Espécie*</label>
+                    <select id="petSpecies" required>
+                        <option value="">Selecione...</option>
+                        <option value="Cachorro">Cachorro</option>
+                        <option value="Gato">Gato</option>
+                        <option value="Pássaro">Pássaro</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="petBreed">Raça</label>
+                    <input type="text" id="petBreed" placeholder="Ex: Golden Retriever">
+                </div>
+
+                <div class="form-group">
+                    <label for="petAge">Idade (anos)</label>
+                    <input type="number" id="petAge" min="0" max="30" placeholder="Ex: 3">
+                </div>
+
+                <div class="form-group">
+                    <label for="ownerName">Nome do Dono*</label>
+                    <input type="text" id="ownerName" required placeholder="Ex: João Silva">
+                </div>
+
+                <button type="submit">Cadastrar Pet</button>
+            </form>
+        </section>
+
+        <section class="card">
+            <h2>Pets Cadastrados</h2>
+            <div class="table-container">
+                <table id="petsTable">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Espécie</th>
+                            <th>Raça</th>
+                            <th>Idade</th>
+                            <th>Dono</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="petList">
+                        </tbody>
+                </table>
+                <div id="emptyMessage" class="empty-msg">Nenhum pet cadastrado ainda.</div>
+            </div>
+        </section>
+    </div>
+</div>
+
+<script>
+    // --- LÓGICA DO JAVASCRIPT ---
+
+    // Elementos do DOM
+    const petForm = document.getElementById('petForm');
+    const petList = document.getElementById('petList');
+    const emptyMessage = document.getElementById('emptyMessage');
+
+    // Carregar pets do LocalStorage ou iniciar array vazio
+    let pets = JSON.parse(localStorage.getItem('pets')) || [];
+
+    // Função para salvar no LocalStorage e atualizar a tela
+    function updateStorageAndUI() {
+        localStorage.setItem('pets', JSON.stringify(pets));
+        renderPets();
+    }
+
+    // Função para renderizar a lista de pets na tabela
+    function renderPets() {
+        // Limpa a tabela existente
+        petList.innerHTML = '';
+
+        if (pets.length === 0) {
+            emptyMessage.style.display = 'block';
+            document.getElementById('petsTable').style.display = 'none';
+            return;
+        }
+
+        emptyMessage.style.display = 'none';
+        document.getElementById('petsTable').style.display = 'table';
+
+        pets.forEach((pet, index) => {
+            const tr = document.createElement('tr');
+
+            tr.innerHTML = `
+                <td><strong>${pet.name}</strong></td>
+                <td>${pet.species}</td>
+                <td>${pet.breed || '-'}</td>
+                <td>${pet.age ? pet.age + ' ano(s)' : '-'}</td>
+                <td>${pet.owner}</td>
+                <td>
+                    <button class="btn-delete" onclick="deletePet(${index})">Excluir</button>
+                </td>
+            `;
+
+            petList.appendChild(tr);
+        });
+    }
+
+    // Evento de envio do formulário
+    petForm.addEventListener('submit', function(e) {
+        e.preventDefault(); // Impede a página de recarregar
+
+        // Captura os valores dos inputs
+        const newPet = {
+            name: document.getElementById('petName').value,
+            species: document.getElementById('petSpecies').value,
+            breed: document.getElementById('petBreed').value,
+            age: document.getElementById('petAge').value,
+            owner: document.getElementById('ownerName').value
+        };
+
+        // Adiciona o novo pet ao array
+        pets.push(newPet);
+
+        // Atualiza a interface e limpa o formulário
+        updateStorageAndUI();
+        petForm.reset();
+    });
+
+    // Função para deletar um pet
+    window.deletePet = function(index) {
+        if (confirm(`Tem certeza que deseja remover o pet ${pets[index].name}?`)) {
+            pets.splice(index, 1); // Remove o item do array
+            updateStorageAndUI();
+        }
+    }
+
+    // Inicializa a tela com os dados salvos
+    renderPets();
+</script>
+
+</body>
+</html>
